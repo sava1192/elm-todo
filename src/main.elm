@@ -36,14 +36,8 @@ update msg model =
     UpdateText text ->
       { model | newTodoContent = text }
     AddTodo ->
-      let
-        newTodo : Todo
-        newTodo =
-          { content = model.newTodoContent
-          , id = model.index
-          }
-      in
-        { model | todos = newTodo :: model.todos
+        { model | todos
+            = Todo model.index model.newTodoContent :: model.todos
         , newTodoContent = ""
         , index = model.index + 1
         }
