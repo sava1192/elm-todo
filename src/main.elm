@@ -13,6 +13,7 @@ main = App.beginnerProgram
 type alias Todo =
   { id: Int
   , content: String
+  , checked: Bool
   }
 type alias Model =
   { newTodoContent: String
@@ -31,23 +32,44 @@ type Msg
   = UpdateText String
   | AddTodo
   | RemoveTodo Int
+  | ChangeStatus Todo
 update msg model =
   case msg of
     UpdateText text ->
       { model | newTodoContent = text }
     AddTodo ->
         { model | todos
-            = Todo model.index model.newTodoContent :: model.todos
+            = Todo model.index model.newTodoContent False :: model.todos
         , newTodoContent = ""
         , index = model.index + 1
         }
     RemoveTodo id ->
-      {model | todos = List.filter (\t -> t.id /= id) model.todos}
+      { model | todos = List.filter (\t -> t.id /= id) model.todos}
+    ChangeStatus todo ->
+      { model | todos =
+          List.map
+            (\item ->
+              if item.id == todo.id then
+                Todo todo.id todo.content (not todo.checked)
+              else
+                item
+            )
+            model.todos
+      }
 
 --VIEW
+strike : List (Html msg) -> Html msg
+strike children =
+  node "strike" [] children
 todoItem todo =
   li []
-    [ text todo.content
+    [ input [ type' "checkbox"
+            , checked todo.checked
+            , onClick (ChangeStatus todo)] []
+    , if todo.checked then
+        strike [text todo.content]
+      else
+        text todo.content
     , button [onClick (RemoveTodo todo.id)] [text "X"]]
 todoList todos =
   let
