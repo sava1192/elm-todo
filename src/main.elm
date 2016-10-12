@@ -44,7 +44,7 @@ update msg model =
         , index = model.index + 1
         }
     RemoveTodo id ->
-      { model | todos = List.filter (\t -> t.id /= id) model.todos}
+      { model | todos = List.filter (\t -> t.id /= id) model.todos }
     ChangeStatus todo ->
       { model | todos =
           List.map
@@ -58,16 +58,13 @@ update msg model =
       }
 
 --VIEW
-strike : List (Html msg) -> Html msg
-strike children =
-  node "strike" [] children
 todoItem todo =
   li []
     [ input [ type' "checkbox"
             , checked todo.checked
             , onClick (ChangeStatus todo)] []
     , if todo.checked then
-        strike [text todo.content]
+        node "strike" [] [text todo.content]
       else
         text todo.content
     , button [onClick (RemoveTodo todo.id)] [text "X"]]
