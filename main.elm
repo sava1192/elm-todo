@@ -10,37 +10,51 @@ main = App.beginnerProgram
   }
 
 --MODEL
+type alias Todo =
+  { id: Int
+  , content: String
+  }
 type alias Model =
-  { todo: String
-  , todos: List String
+  { newTodoContent: String
+  , todos: List Todo
+  , index: Int
   }
 
 model =
-  { todo = ""
+  { newTodoContent = ""
   , todos = []
+  , index = 0
   }
 
 --UPDATE
 type Msg
   = UpdateText String
   | AddTodo
-  | RemoveTodo String
+  | RemoveTodo Int
 update msg model =
   case msg of
     UpdateText text ->
-      { model | todo = text }
+      { model | newTodoContent = text }
     AddTodo ->
-      { model
-        | todos = model.todo :: model.todos
-        , todo = "" }
-    RemoveTodo text ->
-      {model | todos = List.filter (\t -> t /= text) model.todos}
+      let
+        newTodo : Todo
+        newTodo =
+          { content = model.newTodoContent
+          , id = model.index
+          }
+      in
+        { model | todos = newTodo :: model.todos
+        , newTodoContent = ""
+        , index = model.index + 1
+        }
+    RemoveTodo id ->
+      {model | todos = List.filter (\t -> t.id /= id) model.todos}
 
 --VIEW
 todoItem todo =
   li []
-    [ text todo
-    , button [onClick RemoveTodo] [text "X"]]
+    [ text todo.content
+    , button [onClick (RemoveTodo todo.id)] [text "X"]]
 todoList todos =
   let
     children = List.map todoItem todos
@@ -51,7 +65,7 @@ view model =
   div []
     [ input [ type' "text"
             , onInput UpdateText
-            , value model.todo] []
+            , value model.newTodoContent] []
     , button [onClick AddTodo] [text "add todo item"]
     , todoList model.todos
     ]
