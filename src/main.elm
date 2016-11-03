@@ -2,7 +2,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.App as App
 import Html.Events exposing (..)
+import Json.Decode
 
+main : Program Never -- what does it mean?
 main = App.beginnerProgram
   { model = model
   , update = update
@@ -21,6 +23,7 @@ type alias Model =
   , index: Int
   }
 
+model : Model
 model =
   { newTodoContent = ""
   , todos = []
@@ -33,6 +36,8 @@ type Msg
   | AddTodo
   | RemoveTodo Int
   | ChangeStatus Todo
+  | NoOp
+update : Msg -> Model -> Model
 update msg model =
   case msg of
     UpdateText text ->
@@ -56,8 +61,10 @@ update msg model =
             )
             model.todos
       }
+    NoOp -> model
 
 --VIEW
+todoItem : Todo -> Html Msg
 todoItem todo =
   li []
     [ input [ type' "checkbox"
@@ -68,16 +75,29 @@ todoItem todo =
       else
         text todo.content
     , button [onClick (RemoveTodo todo.id)] [text "X"]]
+todoList : List Todo -> Html Msg
 todoList todos =
   let
     children = List.map todoItem todos
   in
     ul [] children
 
+onKeyUp : Int -> Msg -> Attribute Msg
+onKeyUp key msg =
+  let
+    mapper code =
+      if code == key then
+        msg
+      else
+        NoOp
+  in
+    on "keyup" (Json.Decode.map mapper keyCode)
+view : Model -> Html Msg
 view model =
   div []
     [ input [ type' "text"
             , onInput UpdateText
+            , onKeyUp 13 AddTodo
             , value model.newTodoContent] []
     , button [onClick AddTodo] [text "add todo item"]
     , todoList model.todos
